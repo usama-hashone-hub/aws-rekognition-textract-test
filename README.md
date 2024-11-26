@@ -64,12 +64,42 @@ The application uses environment variables for configuration. Make sure to:
     }
     ```
 
+### Document Data Extraction
+- `POST /api/extract-document`
+  - Extracts text, form fields, and tables from documents using AWS Textract
+  - **Body** (multipart/form-data):
+    - `document`: Document image file (JPEG/PNG, max 10MB)
+  - **Response**: 
+    ```json
+    {
+      "success": true,
+      "data": {
+        "formFields": {
+          "field1": "value1",
+          "field2": "value2"
+        },
+        "tables": [
+          {
+            "rowCount": number,
+            "columnCount": number,
+            "rows": [["cell1", "cell2"], ["cell3", "cell4"]]
+          }
+        ],
+        "rawBlocks": [] // Original Textract blocks
+      }
+    }
+    ```
+
 ## File Validation
 
 The API implements strict file validation:
-- Supported formats: JPEG, PNG
-- Maximum file size: 5MB per image
-- Required fields: Both idCard and selfie images
+- ID Verification:
+  - Supported formats: JPEG, PNG
+  - Maximum file size: 5MB per image
+  - Required fields: Both idCard and selfie images
+- Document Extraction:
+  - Supported formats: JPEG, PNG
+  - Maximum file size: 10MB per document
 
 ## Development
 
