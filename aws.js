@@ -195,11 +195,11 @@ async function handleVerification(idCardBuffer, selfieBuffer, userId) {
     const processedSelfie = await preprocessImage(selfieBuffer);
 
     // 2. Verify ID card authenticity
-    const idCardValidation = await verifyIdCard(processedIdCard);
-    console.log(idCardValidation, "idCardValidation");
-    if (!idCardValidation.hasPhoto || !idCardValidation.hasValidDate) {
-      throw new Error("Invalid ID card");
-    }
+    // const idCardValidation = await verifyIdCard(processedIdCard);
+    // console.log(idCardValidation, "idCardValidation");
+    // if (!idCardValidation.hasPhoto || !idCardValidation.hasValidDate) {
+    //   throw new Error("Invalid ID card");
+    // }
 
     // 3. Detect faces in both images
     const idCardFaces = await detectFaces(processedIdCard);
@@ -256,24 +256,19 @@ async function extractDocumentData(documentBuffer) {
         block.BlockType === "KEY_VALUE_SET" &&
         block.EntityTypes?.includes("KEY")
       ) {
-        const key = block.Relationships?.find(
-          (r) => r.Type === "CHILD"
-        )?.Ids?.map((id) => response.Blocks.find((b) => b.Id === id)?.Text).join(
-          " "
+        const key = block.Relationships?.find((r) => r.Type === "CHILD")
+          ?.Ids?.map((id) => response.Blocks.find((b) => b.Id === id)?.Text)
+          .join(" ");
+
+        const valueBlock = response.Blocks.find((b) =>
+          block.Relationships?.find((r) => r.Type === "VALUE")?.Ids?.includes(
+            b.Id
+          )
         );
 
-        const valueBlock = response.Blocks.find(
-          (b) =>
-            block.Relationships?.find((r) => r.Type === "VALUE")?.Ids?.includes(
-              b.Id
-            )
-        );
-
-        const value = valueBlock?.Relationships?.find(
-          (r) => r.Type === "CHILD"
-        )?.Ids?.map((id) => response.Blocks.find((b) => b.Id === id)?.Text).join(
-          " "
-        );
+        const value = valueBlock?.Relationships?.find((r) => r.Type === "CHILD")
+          ?.Ids?.map((id) => response.Blocks.find((b) => b.Id === id)?.Text)
+          .join(" ");
 
         if (key && value) {
           extractedData.formFields[key.trim()] = value.trim();
@@ -301,11 +296,10 @@ async function extractDocumentData(documentBuffer) {
           ).fill("");
         }
 
-        const cellText = block.Relationships?.find(
-          (r) => r.Type === "CHILD"
-        )?.Ids?.map((id) => response.Blocks.find((b) => b.Id === id)?.Text).join(
-          " "
-        ) || "";
+        const cellText =
+          block.Relationships?.find((r) => r.Type === "CHILD")
+            ?.Ids?.map((id) => response.Blocks.find((b) => b.Id === id)?.Text)
+            .join(" ") || "";
 
         currentTable.rows[rowIndex][colIndex] = cellText.trim();
       }
@@ -358,21 +352,14 @@ router.post(
   async (req, res) => {
     try {
       if (!req.file) {
-        return res
-          .status(400)
-          .json({ error: "Document file is required" });
+        return res.status(400).json({ error: "Document file is required" });
       }
 
       // Validate file type
-      const allowedMimeTypes = [ 
-        "image/jpeg",
-        "image/png",
-        "image/jpg",
-      ];
+      const allowedMimeTypes = ["image/jpeg", "image/png", "image/jpg"];
       if (!allowedMimeTypes.includes(req.file.mimetype)) {
         return res.status(400).json({
-          error:
-            "Invalid file type. Only image files (JPEG, PNG) are allowed",
+          error: "Invalid file type. Only image files (JPEG, PNG) are allowed",
         });
       }
 
